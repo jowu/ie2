@@ -1,0 +1,17 @@
+digraph {
+    ForwardModel [color=red]
+    ForwardModel -> carbon_cycle
+    ForwardModel -> clim_fun_CO2_only
+    ForwardModel -> equil_cont
+    ForwardModel -> odeint_system_of_equations
+    ForwardModel -> sol_prod
+    
+    carbon_cycle -> equil_cont
+    carbon_cycle -> lf
+    carbon_cycle -> clim_fun_lowCH4
+    carbon_cycle -> clim_fun_highCH4
+    carbon_cycle -> clim_fun_CO2_only
+    carbon_cycle -> sol_prod
+
+    odeint_system_of_equations -> carbon_cycle
+}

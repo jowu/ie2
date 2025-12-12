@@ -312,10 +312,15 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
             L_over_Lo = 1/(1+0.4*(t0/4.6e9)) # Evolution of solar luminosity from Gough 1981.
             if options_array[2]==1: # Check to see if methane option is on. If yes, use methane climate models:
                 ### Weighting functions for Phanerozoic, Proterozoic, and Archean methane climates (only used high methane tests)   
-                ### Smooth weighting functions are required because sudden temperature jumps break the model.         
+                ### Smooth weighting functions are required because sudden temperature jumps break the model.
+                #length of methane release
+                r_methane=0.01          
                 w0 = 1-1/(1+numpy.exp(-15*(t0/1e9-0.541))) # 1 in the Phanerozoic, 0 elsewhere
-                w1 = 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic, 0 elsewhere
-                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Archean, 0 elsewhere
+                #w1 = 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic, 0 elsewhere
+                w1= 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-150*(t0/1e9-0.7)))+1/((1+numpy.exp(-150*(t0/1e9-0.7+r_methane))))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic exept for spike
+                #w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Archean, 0 elsewhere
+                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5)))+1/(1+numpy.exp(-150*(t0/1e9-0.7)))-1/(1+numpy.exp(-150*(t0/1e9-0.7+r_methane))) # 1 in the Archean and during spike from 0.7 to r_methane release length, 0 elsewhere
+
                 arch_temp=clim_fun_highCH4(EE_ppCO2_o,L_over_Lo) ## Archean temperature with high methane
                 Protero_temp = clim_fun_lowCH4(EE_ppCO2_o,L_over_Lo) ## Proterozoic temperature with high methane
                 

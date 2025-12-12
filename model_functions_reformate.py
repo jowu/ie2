@@ -31,8 +31,8 @@ def Forward_Model(W,F_outgass,n,climp,tdep_weath,mod_sea,alt_frac,Mp_frac,lfrac,
     W=Mo/W # convert mixing time of ocean (yr) to mass flux (kg/yr)
     Mp=Mp_frac*Mo # Mass of water in pore space         
     
-    ##############################################################
-    ############ Compute other initial conditions ################
+    # #############################################################
+    # ########### Compute other initial conditions ################
     # First, we use the assumed values for modern seafloor carbonate precipitation, outgassing, and seafloor dissolution to carbonate precipitation ratio
     # along with the carbon cycle steady state assumption to calculated the modern seafloor dissolution and continental silciate weathering
     partition=mod_sea/F_outgass

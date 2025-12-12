@@ -16,6 +16,11 @@ def Forward_Model(W,F_outgass,n,climp,tdep_weath,mod_sea,alt_frac,Mp_frac,lfrac,
     # define global variables:
     global pK1,pK2,H_CO2,salt,Pore_mod,T_surface0,Ca_p,Ca_o,options_array
     global landf_vary,lum_vary,salt0,k_c,k_o,k_r,Mp,ppCO2_o,Mo,ko1,ko2,ALK_o,ALK_p
+
+    # Used to tracking the previously calculated global temperature. Needed for albedo scaling.
+    global T_tracker
+    T_tracker = 273+18
+
     # load options defined in main_code_parallel.py:
     options_array=numpy.load('options_array.npy')
     
@@ -218,6 +223,14 @@ def lf (t0,lfrac,growth_timing):
     land_frac=numpy.max([0.0,1-1/(LL+numpy.exp(-10*(t0/1e9-growth_timing)))]) # max needed to prevent negative land fractions
     return land_frac
 
+# This can be used to scale the albedo, relative to today's average albedo of 0.3
+def albedo_factor(T:float) -> float:
+    a = 0.3  # Today's average global albedo.
+    spike = 1/(1+numpy.exp(10*(T-280))) # 1 below 280 K, 0 above
+    factor =  a/(a + spike*0.05)
+    # print(f'T: {T:.1f}\tAlbedo correction: {factor:.2f}')
+    return factor
+
 ## The function carbon_cycle takes as inputs carbonate alkalinity and carbon abundance in the ocean and pore space, along with input parameters and time (in years), and calculates other steady state
 ## carbon cycle variables including complete ocean chemistry, surface temperature, and carbon cycle fluxes.
 def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_frac,
@@ -236,6 +249,8 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
     global pK1,pK2,H_CO2,salt,Pore_mod,T_surface0,ALK_o,ALK_p,Ca_p,Ca_o,options_array
     global landf_vary,lum_vary,salt0,k_c,k_o,k_r,Mp,ppCO2_o,Mo,ko1,ko2#,Mg_fun,Ca_Tfun,coef_for_diss
     
+    # Used to tracking the previously calculated global temperature. Needed for albedo scaling.
+    global T_tracker 
     #ocean variables
     s=1.8e20/Mo #correction factor for mass balance (see manuscript) 
 
@@ -310,6 +325,8 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
 
         if lum_vary=="y":
             L_over_Lo = 1/(1+0.4*(t0/4.6e9)) # Evolution of solar luminosity from Gough 1981.
+            # To modify luminosity with albedo scaling, use the line below. This explodes when the T curve has steep gradients.
+            # L_over_Lo = 1/(1+0.4*(t0/4.6e9))*albedo_factor(T_tracker) # Evolution of solar luminosity from Gough 1981.
             if options_array[2]==1: # Check to see if methane option is on. If yes, use methane climate models:
                 ### Weighting functions for Phanerozoic, Proterozoic, and Archean methane climates (only used high methane tests)   
                 ### Smooth weighting functions are required because sudden temperature jumps break the model.
@@ -332,7 +349,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
                 ###T_surface=clim_fun_CO2_only(EE_ppCO2_o,L_over_Lo)+30.0 * (1/(1+numpy.exp(-15*(t0/1e9-2.5)))) ## for +30 K sensitivity test
         else:
             T_surface=clim_fun_CO2_only(EE_ppCO2_o,1.0) # For CO2-only, no evolution in solar luminosity
-
+        T_tracker = T_surface
         ## Calculate deep ocean temperature
         T_surface_diff=T_surface-T_surface0
         interc=274.037-deep_grad*T_surface0 # intercept chosen to reproduce initial (modern) temperature
@@ -370,6 +387,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
     scale_factor = 3
     spike = 1/(1+numpy.exp(-150*(t0/1e9-0.700)))-1/(1+numpy.exp(-150*(t0/1e9-0.750))) # 1 in the Proterozoic, 0 elsewhere
     scale = 1 + (scale_factor-1)*spike
+    print(f'Weathering scale: {scale}')
 
     # Carbonate weathering flux 
     carb_weath=F_carbw*scale*biology_modifier*(EE_ppCO2_o/ppCO2_o)**(carb_exp)*numpy.exp((T_surface_diff)/tdep_weath)*land # equation S2

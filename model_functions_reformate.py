@@ -223,12 +223,15 @@ def lf (t0,lfrac,growth_timing):
     land_frac=numpy.max([0.0,1-1/(LL+numpy.exp(-10*(t0/1e9-growth_timing)))]) # max needed to prevent negative land fractions
     return land_frac
 
-# This can be used to scale the albedo, relative to today's average albedo of 0.3
+# This can be used to scale the albedo, relative to today's average albedo of 0.3.
+# It only works standalone, it cannot be combined with other effects that rapidly drop temperature.
+# This is for demonstration purposes only, it doesn't work well enough to draw any conclusions
+# from the output generated.
 def albedo_factor(T:float) -> float:
     a = 0.3  # Today's average global albedo.
-    spike = 1/(1+numpy.exp(10*(T-280))) # 1 below 280 K, 0 above
+    spike = 1/(1+numpy.exp(50*(T-290))) # 1 below 290 K, 0 above
     factor =  a/(a + spike*0.05)
-    # print(f'T: {T:.1f}\tAlbedo correction: {factor:.2f}')
+    print(f'T: {T:.1f}\tAlbedo correction: {factor:.2f}')
     return factor
 
 ## The function carbon_cycle takes as inputs carbonate alkalinity and carbon abundance in the ocean and pore space, along with input parameters and time (in years), and calculates other steady state
@@ -268,7 +271,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
     T_upd=273+18 # initial guess for surface temperature
     T_upd2=273+18 # initial guess for pore-space temperature
     
-    T_surface=100.0 # Filler value (T_surface will be calcauled within the loop)
+    T_surface=100 # Filler value (T_surface will be calcauled within the loop)
     
      
     # Check to see if Carbon_chem is 0 or 1
@@ -324,9 +327,9 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
             land=1.0
 
         if lum_vary=="y":
-            L_over_Lo = 1/(1+0.4*(t0/4.6e9)) # Evolution of solar luminosity from Gough 1981.
+            # L_over_Lo = 1/(1+0.4*(t0/4.6e9)) # Evolution of solar luminosity from Gough 1981.
             # To modify luminosity with albedo scaling, use the line below. This explodes when the T curve has steep gradients.
-            # L_over_Lo = 1/(1+0.4*(t0/4.6e9))*albedo_factor(T_tracker) # Evolution of solar luminosity from Gough 1981.
+            L_over_Lo = 1/(1+0.4*(t0/4.6e9))*albedo_factor(T_surface) # Evolution of solar luminosity from Gough 1981.
             if options_array[2]==1: # Check to see if methane option is on. If yes, use methane climate models:
                 ### Weighting functions for Phanerozoic, Proterozoic, and Archean methane climates (only used high methane tests)   
                 ### Smooth weighting functions are required because sudden temperature jumps break the model.

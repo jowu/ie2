@@ -142,6 +142,8 @@ def Forward_Model(W,F_outgass,n,climp,tdep_weath,mod_sea,alt_frac,Mp_frac,lfrac,
     spread_ar=0*time # spreading rate relative to modern
     T_pore_space_ar=0*time # pore space temperature
    
+    print('STARTING SOLVING FOR TEMPERATURE')
+    T_tracker = 273+18
     for i in range(0,len(time)): 
         # using ode solution (alkalinities and DIC abundances) and input parameters, fill array pl1 with other carbon cycle evolution variables
         # pl1=carbon_cycle([carbon_solution[i,0],carbon_solution[i,1],carbon_solution[i,2],carbon_solution[i,3]],time[i],W,F_outgass,n,climp,tdep_weath,mod_sea,alt_frac,Mp_frac,lfrac,carb_exp,sed_thick,F_carbw,CWF,deep_grad,coef_for_diss,beta,n_out,mm,growth_timing,new_add_Ca,Ebas) #ocean
@@ -227,11 +229,15 @@ def lf (t0,lfrac,growth_timing):
 # It only works standalone, it cannot be combined with other effects that rapidly drop temperature.
 # This is for demonstration purposes only, it doesn't work well enough to draw any conclusions
 # from the output generated.
-def albedo_factor(T:float) -> float:
+def albedo_factor(T:float, time:float) -> float:
     a = 0.3  # Today's average global albedo.
-    spike = 1/(1+numpy.exp(50*(T-290))) # 1 below 290 K, 0 above
-    factor =  a/(a + spike*0.05)
-    print(f'T: {T:.1f}\tAlbedo correction: {factor:.2f}')
+    try:
+        spike = 1/(1+numpy.exp(25*(T-280))) # 1 below 290 K, 0 above
+    except RuntimeWarning:
+        print('Spike params: T = {T}')
+        raise
+    factor =  a/(a + spike*0.06)
+    print(f'Time: {time/1e6:.2f}Ma\tT: {T:.1f}\tAlbedo correction: {factor:.2f}')
     return factor
 
 ## The function carbon_cycle takes as inputs carbonate alkalinity and carbon abundance in the ocean and pore space, along with input parameters and time (in years), and calculates other steady state
@@ -329,7 +335,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
         if lum_vary=="y":
             # L_over_Lo = 1/(1+0.4*(t0/4.6e9)) # Evolution of solar luminosity from Gough 1981.
             # To modify luminosity with albedo scaling, use the line below. This explodes when the T curve has steep gradients.
-            L_over_Lo = 1/(1+0.4*(t0/4.6e9))*albedo_factor(T_surface) # Evolution of solar luminosity from Gough 1981.
+            L_over_Lo = 1/(1+0.4*(t0/4.6e9))*albedo_factor(T_tracker, t0) # Evolution of solar luminosity from Gough 1981.
             if options_array[2]==1: # Check to see if methane option is on. If yes, use methane climate models:
                 ### Weighting functions for Phanerozoic, Proterozoic, and Archean methane climates (only used high methane tests)   
                 ### Smooth weighting functions are required because sudden temperature jumps break the model.
@@ -387,7 +393,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
     # Sturtian: assume 750-700 Ma
     # Manoan: assume 650-600Ma
     # Weathering modifiers for glaciation periods
-    scale_factor = 3
+    scale_factor = 2
     spike = 1/(1+numpy.exp(-150*(t0/1e9-0.700)))-1/(1+numpy.exp(-150*(t0/1e9-0.750))) # 1 in the Proterozoic, 0 elsewhere
     scale = 1 + (scale_factor-1)*spike
     print(f'Weathering scale: {scale}')

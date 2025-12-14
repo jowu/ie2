@@ -385,7 +385,7 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
     # Marinoan: assume 650-600Ma (we ignore this one)
     # Weathering modifiers for glaciation periods
     scale_factor = 3
-    spike = 1/(1+numpy.exp(-150*(t0/1e9-0.700)))-1/(1+numpy.exp(-150*(t0/1e9-0.750))) # 1 in the Proterozoic, 0 elsewhere
+    spike = 1/(1+numpy.exp(-150*(t0/1e9-0.700)))-1/(1+numpy.exp(-150*(t0/1e9-0.750))) # 1 during the expected glacial period, 0 elsewhere
     scale = 1 + (scale_factor-1)*spike
     print(f'Weathering scale: {scale}')
 

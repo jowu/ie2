@@ -334,9 +334,9 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
                 r_methane=0.01          
                 w0 = 1-1/(1+numpy.exp(-15*(t0/1e9-0.541))) # 1 in the Phanerozoic, 0 elsewhere
                 #w1 = 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic, 0 elsewhere
-                w1= 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-150*(t0/1e9-0.7)))+1/((1+numpy.exp(-150*(t0/1e9-0.7+r_methane))))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic exept for spike
+                w1= 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-150*(t0/1e9-0.750)))+1/((1+numpy.exp(-150*(t0/1e9-0.750+r_methane))))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic exept for spike
                 #w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Archean, 0 elsewhere
-                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5)))+1/(1+numpy.exp(-150*(t0/1e9-0.7)))-1/(1+numpy.exp(-150*(t0/1e9-0.7+r_methane))) # 1 in the Archean and during spike from 0.7 to r_methane release length, 0 elsewhere
+                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5)))+1/(1+numpy.exp(-150*(t0/1e9-0.750)))-1/(1+numpy.exp(-150*(t0/1e9-0.750+r_methane))) # 1 in the Archean and during spike from 0.7 to r_methane release length, 0 elsewhere
 
                 arch_temp=clim_fun_highCH4(EE_ppCO2_o,L_over_Lo) ## Archean temperature with high methane
                 Protero_temp = clim_fun_lowCH4(EE_ppCO2_o,L_over_Lo) ## Proterozoic temperature with high methane

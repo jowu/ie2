@@ -109,7 +109,7 @@ def Forward_Model(W,F_outgass,n,climp,tdep_weath,mod_sea,alt_frac,Mp_frac,lfrac,
     ### remaining proportionality constants
     k_r=F_diss0/(2.88*10**-14*10**(-coef_for_diss*pH_p)*numpy.exp(-Ebas/(8.314*(buffer_T+Pore_mod)))) #for seafloor dissolution
         
-    time=numpy.linspace(0,4e9,1000) #define time array from 0 to 4 Ga in 100 time steps. Number of time steps can be increased for greater precision (takes longer)
+    time=numpy.linspace(0,4e9,10000) #define time array from 0 to 4 Ga in 100 time steps. Number of time steps can be increased for greater precision (takes longer)
     # run ode solver with initial conditions defined above, and inputs from main_code_parallel.py. The ode solver will output the dissolved inorganic carbon and
     # alkalinities of the ocean and pore space through time (all containted in 'out'). The diagnostic 'mes' is also returned
     [carbon_solution,mes]=scipy.integrate.odeint(system_of_equations, [DIC_o+1.8e20/Mo*ppCO2_o,ALK_o,DIC_p,ALK_p], time, args=(W,F_outgass,n,climp,tdep_weath,None,None,None,lfrac,carb_exp,sed_thick,F_carbw,CWF,deep_grad,coef_for_diss,beta,n_out,mm,growth_timing,new_add_Ca,Ebas,F_sil0),full_output=1)
@@ -334,9 +334,10 @@ def carbon_cycle (y,t0,W,F_outgass,n,climp,tdep_weath,_mod_sea,_alt_frac,_Mp_fra
                 r_methane=0.01          
                 w0 = 1-1/(1+numpy.exp(-15*(t0/1e9-0.541))) # 1 in the Phanerozoic, 0 elsewhere
                 #w1 = 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic, 0 elsewhere
-                w1= 1/(1+numpy.exp(-15*(t0/1e9-0.541)))-1/(1+numpy.exp(-150*(t0/1e9-0.750)))+1/((1+numpy.exp(-150*(t0/1e9-0.750+r_methane))))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic exept for spike
+                w1= 1/(1+numpy.exp(-15*(t0/1e9-0.541)))+1/(1+numpy.exp(-150*(t0/1e9-0.750)))
+                -1/((1+numpy.exp(-150*(t0/1e9-0.750+r_methane))))-1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Proterozoic exept for spike
                 #w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5))) # 1 in the Archean, 0 elsewhere
-                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5)))+1/(1+numpy.exp(-150*(t0/1e9-0.750)))-1/(1+numpy.exp(-150*(t0/1e9-0.750+r_methane))) # 1 in the Archean and during spike from 0.7 to r_methane release length, 0 elsewhere
+                w2 = 1/(1+numpy.exp(-15*(t0/1e9-2.5)))-1/(1+numpy.exp(-150*(t0/1e9-0.750)))+1/(1+numpy.exp(-150*(t0/1e9-0.750+r_methane))) # 1 in the Archean and during spike from 0.7 to r_methane release length, 0 elsewhere
 
                 arch_temp=clim_fun_highCH4(EE_ppCO2_o,L_over_Lo) ## Archean temperature with high methane
                 Protero_temp = clim_fun_lowCH4(EE_ppCO2_o,L_over_Lo) ## Proterozoic temperature with high methane
